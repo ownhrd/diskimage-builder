@@ -1,0 +1,179 @@
+#!/bin/bash
+
+source /mnt/diskimage-builder/image-builder-openrc.sh
+
+export windows_count="windows.count"
+export ubuntu_count="ubuntu.count"
+export fedora_count="fedora.count"
+export centos_count="centos.count"
+export debian_count="debian.count"
+
+#Исключаем последний загруженный имадж Windows 2008, т.е. актуальный
+
+echo "Start check&delete Windows Server 2008..."
+
+for image_list in `glance --insecure image-list --sort-key=created_at | grep Windows-Server-2008-* | awk 'NR >= 2 {print $2}'`
+
+# Проверка на наличие запущенных инстансов со старых имаджей
+
+do
+  nova --insecure list --all-tenants --image $image_list | grep ACTIVE | awk '{ print $2 }' > $windows_count
+
+  if [ `wc -l $windows_count | awk '{ print $1 }'` == "0" ]
+    then
+    echo "Instance count=0, delete old image: $image_list"
+    glance --insecure image-delete $image_list
+    else 
+    echo "Instance ID:"
+    cat ./$windows_count
+  fi
+done
+
+#Исключаем последний загруженный имадж Windows 2012, т.е. актуальный
+
+echo "Start check&delete Windows Server 2012..."
+
+for image_list in `glance --insecure image-list --sort-key=created_at | grep Windows-Server-2012-* | awk 'NR >= 2 {print $2}'`
+
+# Проверка на наличие запущенных инстансов со старых имаджей
+
+do
+  nova --insecure list --all-tenants --image $image_list | grep ACTIVE | awk '{ print $2 }' > $windows_count
+
+  if [ `wc -l $windows_count | awk '{ print $1 }'` == "0" ]
+    then
+    echo "Instance count=0, delete old image: $image_list"
+    glance --insecure image-delete $image_list
+    else
+    echo "Instance ID:"
+    cat ./$windows_count
+  fi
+done
+
+#Исключаем последний загруженный имадж Windows 2016, т.е. актуальный
+
+echo "Start check&delete Windows Server 2016..."
+
+for image_list in `glance --insecure image-list --sort-key=created_at | grep Windows-Server-2016-* | awk 'NR >= 2 {print $2}'`
+
+# Проверка на наличие запущенных инстансов со старых имаджей
+
+do
+  nova --insecure list --all-tenants --image $image_list | grep ACTIVE | awk '{ print $2 }' > $windows_count
+
+  if [ `wc -l $windows_count | awk '{ print $1 }'` == "0" ]
+    then
+    echo "Instance count=0, delete old image: $image_list"
+    glance --insecure image-delete $image_list
+    else
+    echo "Instance ID:"
+    cat ./$windows_count
+  fi
+done
+
+#Исключаем последний загруженный имадж Ubuntu Server 16.04, т.е. актуальный
+
+echo "Start check&delete Ubuntu..."
+
+for image_list in `glance --insecure image-list --sort-key=created_at | grep Ubuntu-Server-16.04-* | awk 'NR >= 2 {print $2}'`
+
+# Проверка на наличие запущенных инстансов со старых имаджей
+
+do
+  nova --insecure list --all-tenants --image $image_list | grep ACTIVE | awk '{ print $2 }' > $ubuntu_count
+
+  if [ `wc -l $ubuntu_count | awk '{ print $1 }'` == "0" ]
+    then
+    echo "Instance count=0, delete old image: $image_list"
+    glance --insecure image-delete $image_list
+    else
+    echo "Instance ID:"
+    cat ./$ubuntu_count
+  fi
+done
+
+#Исключаем последний загруженный имадж Fedora 24, т.е. актуальный
+
+echo "Start check&delete Fedora..."
+
+for image_list in `glance --insecure image-list --sort-key=created_at | grep Fedora-24-* | awk 'NR >= 2 {print $2}'`
+
+# Проверка на наличие запущенных инстансов со старых имаджей
+
+do
+  nova --insecure list --all-tenants --image $image_list | grep ACTIVE | awk '{ print $2 }' > $fedora_count
+
+  if [ `wc -l $fedora_count | awk '{ print $1 }'` == "0" ]
+    then
+    echo "Instance count=0, delete old image: $image_list"
+    glance --insecure image-delete $image_list
+    else
+    echo "Instance ID:"
+    cat ./$fedora_count
+  fi
+done
+
+#Исключаем последний загруженный имадж CentOS 6, т.е. актуальный
+
+echo "Start check&delete CentOS 6..."
+
+for image_list in `glance --insecure image-list --sort-key=created_at | grep CentOS-6-* | awk 'NR >= 2 {print $2}'`
+
+# Проверка на наличие запущенных инстансов со старых имаджей
+
+do
+  nova --insecure list --all-tenants --image $image_list | grep ACTIVE | awk '{ print $2 }' > $centos_count
+
+  if [ `wc -l $centos_count | awk '{ print $1 }'` == "0" ]
+    then
+    echo "Instance count=0, delete old image: $image_list"
+    glance --insecure image-delete $image_list
+    else
+    echo "Instance ID:"
+    cat ./$centos_count
+  fi
+done
+
+#Исключаем последний загруженный имадж CentOS 7, т.е. актуальный
+
+echo "Start check&delete CentOS 7..."
+
+for image_list in `glance --insecure image-list --sort-key=created_at | grep CentOS-7-* | awk 'NR >= 2 {print $2}'`
+
+# Проверка на наличие запущенных инстансов со старых имаджей
+
+do
+  nova --insecure list --all-tenants --image $image_list | grep ACTIVE | awk '{ print $2 }' > $centos_count
+
+  if [ `wc -l $centos_count | awk '{ print $1 }'` == "0" ]
+    then
+    echo "Instance count=0, delete old image: $image_list"
+    glance --insecure image-delete $image_list
+    else
+    echo "Instance ID:"
+    cat ./$centos_count
+  fi
+done
+
+#Исключаем последний загруженный имадж Debian 8, т.е. актуальный
+
+echo "Start check&delete Debian 8..."
+
+for image_list in `glance --insecure image-list --sort-key=created_at | grep Debian-8-* | awk 'NR >= 2 {print $2}'`
+
+# Проверка на наличие запущенных инстансов со старых имаджей
+
+do
+  nova --insecure list --all-tenants --image $image_list | grep ACTIVE | awk '{ print $2 }' > $debian_count
+
+  if [ `wc -l $debian_count | awk '{ print $1 }'` == "0" ]
+    then
+    echo "Instance count=0, delete old image: $image_list"
+    glance --insecure image-delete $image_list
+    else
+    echo "Instance ID:"
+    cat ./$debian_count
+  fi
+done
+
+exit 0

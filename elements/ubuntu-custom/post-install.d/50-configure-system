@@ -1,0 +1,22 @@
+#!/bin/bash
+
+# Change default timezone to MSK
+
+echo '#cloud-config' > /etc/cloud/cloud.cfg.d/50_timezone.cfg
+echo 'timezone: Europe/Moscow'  >> /etc/cloud/cloud.cfg.d/50_timezone.cfg
+
+# Don't written source.list by cloud-init on first boot of an instance
+
+echo '#cloud-config' > /etc/cloud/cloud.cfg.d/50_change_sources.cfg
+echo 'apt_preserve_sources_list: true' >> /etc/cloud/cloud.cfg.d/50_change_sources.cfg
+
+# Change default password
+
+#echo '#cloud-config' > /etc/cloud/cloud.cfg.d/50_change_default_pass.cfg
+#echo 'password: ubuntu' >> /etc/cloud/cloud.cfg.d/50_change_default_pass.cfg
+
+# Change default user password expiry information
+
+#echo '#cloud-config' > /etc/cloud/cloud.cfg.d/50_chage_password.cfg
+#echo 'runcmd:' >> /etc/cloud/cloud.cfg.d/50_chage_password.cfg
+#echo '- chage -d 0 ubuntu' >> /etc/cloud/cloud.cfg.d/50_chage_password.cfg

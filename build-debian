@@ -1,0 +1,73 @@
+#!/bin/bash
+
+# Скрипт для автоматической сборки и загрузки в OpenStack Debian 8
+# Экспортируем необходимые переменные и функции
+
+source /mnt/diskimage-builder/image-builder-openrc.sh
+export ARCH="amd64"
+export BASE_ELEMENTS="bootloader cloud-init-datasources apt-sources debian debian-custom"
+export DIB_CLOUD_INIT_DATASOURCES="ConfigDrive, OpenStack"
+export DIB_RELEASE=""
+export ELEMENTS_PATH="/mnt/diskimage-builder/elements/:/usr/share/diskimage-builder/elements/"
+export IMAGE_PATH="/mnt/diskimage-builder/images/debian_8_updated(`date -I`)"
+export DIB_APT_SOURCES="/mnt/diskimage-builder/elements/files/debian-ru-repos/sources.list"
+export IMAGE_NAME="Debian-8-updated(`date -I`)"
+export property="--os-version=8 --os-distro=debian --property hw_disk_bus=scsi --property hw_scsi_model=virtio-scsi --property hw_vif_model=virtio --property hw_vif_multiqueue_enabled=true"
+
+visibility () {
+glance --insecure image-show $NEW_IMAGE_ID | grep visibility | awk ' {print $4}'
+}
+
+del_ssh_key () {
+ssh-keygen -f "/root/.ssh/known_hosts" -R 10.20.95.39
+}
+
+failed_image () {
+OLD_IMAGE_ID=$(glance --insecure image-list --sort-key=created_at | grep Debian-8-* | awk 'NR == 2 {print $2}')
+echo "Failed, rebuilded VM"
+nova --insecure rebuild test-image-autorebuild $OLD_IMAGE_ID; sleep 180
+echo "Delete failed image: $NEW_IMAGE_ID"
+glance --insecure image-delete $NEW_IMAGE_ID
+del_ssh_key
+rm -r /mnt/diskimage-builder/images/debian_8_updated*
+}
+
+# Генерируем новый образ
+disk-image-create vm $BASE_ELEMENTS -t raw -o $IMAGE_PATH
+
+# Загружаем новый образ в OpenStack
+glance --insecure image-create --architecture=x86_64 --name=$IMAGE_NAME --file=$IMAGE_PATH.raw --disk-format=raw --container-format=bare --progress $property
+
+# Собираем Instance для проверки образа
+nova --insecure rebuild test-image-autorebuild $IMAGE_NAME; sleep 180
+
+# Проверям собранный образ с помощью ssh
+CMD_SSH=$(ssh -oStrictHostKeyChecking=no debian@10.20.95.39 ls /home/)
+CHECK="debian"
+echo "Check VM: $CMD_SSH;$CHECK"
+
+NEW_IMAGE_ID=$(glance --insecure image-list | grep $IMAGE_NAME | awk '{ print $2 }') # Получаем ID нового образа
+
+if [ "$CMD_SSH" == "$CHECK" ]; then
+  echo "Set public new image: $NEW_IMAGE_ID"
+  glance --insecure image-update --visibility=public $NEW_IMAGE_ID # Публикуем новый образ
+  if [ `visibility` != "public" ]; then # Проверяем успешно ли опубликовался
+    echo "Check public failed"
+    failed_image; exit 1; else # Удаляем загруженный образ
+    echo "Check public successful"
+  fi; else
+  echo "Check public failed"  
+  failed_image; exit 1 # Удаляем загруженный образ
+fi
+
+del_ssh_key
+
+# Прячем старые образы
+for OLD_IMAGE_LIST in `glance --insecure image-list --sort-key=created_at | grep Debian-8-* | awk 'NR >= 2 {print $2}'`; do
+  echo "Set private old image: $OLD_IMAGE_LIST"
+  glance --insecure image-update --visibility=private $OLD_IMAGE_LIST
+done
+
+# Удаляем собранный образ
+rm -r /mnt/diskimage-builder/images/debian_8_updated*
+exit 0

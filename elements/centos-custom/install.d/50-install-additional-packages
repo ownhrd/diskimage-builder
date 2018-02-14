@@ -1,0 +1,8 @@
+#!/bin/bash
+
+packages="vim
+htop
+ioping
+tmux"
+
+yum -y install $packages
